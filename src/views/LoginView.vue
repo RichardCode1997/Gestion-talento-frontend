@@ -22,6 +22,8 @@ const handleLogin = async () => {
     // IMPORTANTE: Tu backend devuelve 'accessToken' según la captura
     if (response.data && response.data.accessToken) {
       localStorage.setItem('token', response.data.accessToken);
+      localStorage.setItem('correo', response.data.correo);
+      localStorage.setItem('rol', response.data.rol);
       console.log("Token guardado, redirigiendo...");
       router.push('/home');
     } else {

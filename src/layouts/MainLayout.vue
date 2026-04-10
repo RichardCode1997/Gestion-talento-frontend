@@ -56,8 +56,8 @@
           </div>
         </div>
 
-        <!-- Usuarios -->
-        <div class="nav-group" :class="{ open: openGroup === 'usuarios' }">
+        <!-- Usuarios - solo ADMINISTRADOR -->
+        <div v-if="esAdmin" class="nav-group" :class="{ open: openGroup === 'usuarios' }">
           <div class="nav-item nav-group-toggle" @click="toggleGroup('usuarios')">
             <i class="bi bi-shield-lock"></i>
             <span>Usuarios</span>
@@ -149,11 +149,15 @@ const userMenuOpen = ref(false)
 const userMenuRef = ref(null)
 
 const userName = computed(() => {
-  return localStorage.getItem('userName') || 'Administrador'
+  return localStorage.getItem('correo') || 'Administrador'
 })
 
 const userInitial = computed(() => {
   return userName.value.charAt(0).toUpperCase()
+})
+
+const esAdmin = computed(() => {
+  return localStorage.getItem('rol') === 'ADMINISTRADOR'
 })
 
 function toggleSidebar() {
@@ -170,7 +174,8 @@ function toggleUserMenu() {
 
 function logout() {
   localStorage.removeItem('token')
-  localStorage.removeItem('userName')
+  localStorage.removeItem('correo')
+  localStorage.removeItem('rol')
   router.push('/login')
 }
 

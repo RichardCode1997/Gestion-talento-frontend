@@ -6,6 +6,7 @@ import MainLayout from '@/layouts/MainLayout.vue'
 // Views — carga lazy para mejor performance
 const LoginView    = () => import('@/views/LoginView.vue')
 const HomeView     = () => import('@/views/HomeView.vue')
+const SinPermisosView = () => import('@/views/SinPermisosView.vue')
 
 // Usuarios
 const UsuariosView  = () => import('@/views/usuarios/UsuariosView.vue')
@@ -54,22 +55,32 @@ const router = createRouter({
           component: HomeView
         },
 
-        // Usuarios
+        // Sin permisos
+        {
+          path: 'sin-permisos',
+          name: 'sin-permisos',
+          component: SinPermisosView
+        },
+
+        // Usuarios — solo ADMINISTRADOR
         {
           path: 'usuarios',
           name: 'usuarios',
-          component: UsuariosView
+          component: UsuariosView,
+          meta: { requiereRol: 'ADMINISTRADOR' }
         },
         {
           path: 'usuarios/nuevo',
           name: 'usuarios-nuevo',
-          component: UsuarioForm
+          component: UsuarioForm,
+          meta: { requiereRol: 'ADMINISTRADOR' }
         },
         {
           path: 'usuarios/:id/editar',
           name: 'usuarios-editar',
           component: UsuarioForm,
-          props: true
+          props: true,
+          meta: { requiereRol: 'ADMINISTRADOR' }
         },
 
         // Empleados
@@ -139,16 +150,21 @@ const router = createRouter({
   ]
 })
 
-// ── Guard global de autenticación ──
+// ── Guard global ──
 router.beforeEach((to) => {
   const token = localStorage.getItem('token')
-  const requiresAuth = to.meta.requiresAuth !== false // por defecto protegida
+  const rol   = localStorage.getItem('rol')
+  const requiresAuth = to.meta.requiresAuth !== false
 
-  if (requiresAuth && !token) {
-    return { name: 'login' }
-  }
-  if (!requiresAuth && token && to.name === 'login') {
-    return { name: 'home' }
+  // Sin token → login
+  if (requiresAuth && !token) return { name: 'login' }
+
+  // Ya logueado → no volver al login
+  if (!requiresAuth && token && to.name === 'login') return { name: 'home' }
+
+  // Verificar rol requerido
+  if (to.meta.requiereRol && to.meta.requiereRol !== rol) {
+    return { name: 'sin-permisos' }
   }
 })
 
