@@ -7,7 +7,14 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
-    vue(),
+    vue({
+      template: {
+        compilerOptions: {
+          // Esto soluciona las advertencias de los iconos en la consola
+          isCustomElement: (tag) => tag.startsWith('ion-')
+        }
+      }
+    }),
     vueDevTools(),
   ],
   resolve: {
