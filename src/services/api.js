@@ -57,15 +57,14 @@ export const usuariosService = {
 //  EMPLEADOS
 // ════════════════════════════════════════
 export const empleadosService = {
-  listarTodos:     ()      => api.get('/empleados'),
-  listarActivos:   ()      => api.get('/empleados/activos'),
-  listarInactivos: ()      => api.get('/empleados/inactivos'),
-  buscarPorDni:    (dni)   => api.get(`/empleados/dni/${dni}`),
-  registrar:       (data)  => api.post('/empleados', data),
-  actualizar:      (id, data) => api.put(`/empleados/${id}`, data),
-  activar:         (id) => api.patch(`/empleados/${id}/activar`),
-  desactivar:      (id) => api.patch(`/empleados/${id}/desactivar`),
-  eliminar:        (id)    => api.delete(`/empleados/${id}`),
+  listarTodos:      ()           => api.get('/empleados'),
+  listarPorEstado:  (estado)     => api.get(`/empleados/filtrar?estado=${estado}`),
+  listarSinUsuario: ()           => api.get('/empleados/sin-usuario'),
+  buscarPorDni:     (dni)        => api.get(`/empleados/dni/${dni}`),
+  obtener:          (id)         => api.get(`/empleados/${id}`),
+  registrar:        (data)       => api.post('/empleados', data),
+  actualizar:       (id, data)   => api.put(`/empleados/${id}`, data),
+  cambiarEstado:    (id, estado) => api.patch(`/empleados/${id}/estado?estado=${estado}`),
 }
 
 // ════════════════════════════════════════

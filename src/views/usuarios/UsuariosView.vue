@@ -82,8 +82,9 @@ async function toggleEstado(usuario) {
     }
     await cargarUsuarios()
     mostrarToast('Estado actualizado correctamente.', 'success')
-  } catch {
-    mostrarToast('Error al cambiar el estado.', 'error')
+  } catch (e) {
+    const msg = e.response?.data?.message ?? 'Error al cambiar el estado.'
+    mostrarToast(msg, 'error')
   }
 }
 

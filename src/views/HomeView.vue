@@ -11,36 +11,51 @@ const stats = ref([
   { title: 'Permisos Pendientes', value: '—', icon: 'bi-file-earmark-check-fill', color: '#cc5de8', bg: 'rgba(204,93,232,0.1)', desc: 'Por aprobar' },
 ])
 
+const rol = localStorage.getItem('rol')
+const esAdmin = rol === 'ADMINISTRADOR'
+const esAdminOSupervisor = esAdmin || rol === 'SUPERVISOR'
+
 const modules = [
-  { title: 'Empleados', desc: 'Gestiona los perfiles y datos de todos los colaboradores de la organización.', icon: 'bi-people', color: '#4f8cff', link: '/empleados' },
-  { title: 'Usuarios', desc: 'Administra las cuentas de acceso al sistema con control de roles y permisos.', icon: 'bi-shield-lock', color: '#38d9a9', link: '/usuarios' },
-  { title: 'Horarios', desc: 'Configura y asigna jornadas laborales a los distintos grupos de trabajo.', icon: 'bi-calendar3', color: '#ff922b', link: '/horarios' },
-  { title: 'Asistencias', desc: 'Consulta el registro diario de entradas y salidas del personal.', icon: 'bi-clock-history', color: '#cc5de8', link: '/asistencias' },
-  { title: 'Tardanzas', desc: 'Monitorea los ingresos fuera de horario y genera reportes de incidencias.', icon: 'bi-alarm', color: '#f03e3e', link: '/tardanzas' },
-  { title: 'Faltas', desc: 'Controla las inasistencias y el historial de ausencias no justificadas.', icon: 'bi-calendar-x', color: '#ffd43b', link: '/faltas' },
-  { title: 'Permisos', desc: 'Gestiona las solicitudes de permisos y ausencias justificadas del personal.', icon: 'bi-file-earmark-check', color: '#20c997', link: '/permisos' },
-  { title: 'Noticias', desc: 'Publica y administra los comunicados internos de la organización.', icon: 'bi-newspaper', color: '#74c0fc', link: '/noticias' },
+  ...(esAdminOSupervisor ? [{ title: 'Empleados', desc: 'Gestiona los perfiles y datos de todos los colaboradores.', icon: 'bi-people', color: '#4f8cff', link: '/empleados' }] : []),
+  ...(esAdmin ? [{ title: 'Usuarios', desc: 'Administra las cuentas de acceso al sistema.', icon: 'bi-shield-lock', color: '#38d9a9', link: '/usuarios' }] : []),
+  ...(esAdmin ? [{ title: 'Horarios', desc: 'Configura y asigna jornadas laborales.', icon: 'bi-calendar3', color: '#ff922b', link: '/horarios' }] : []),
+  { title: 'Asistencias', desc: 'Consulta el registro diario de entradas y salidas.', icon: 'bi-clock-history', color: '#cc5de8', link: '/asistencias' },
+  { title: 'Tardanzas', desc: 'Monitorea los ingresos fuera de horario.', icon: 'bi-alarm', color: '#f03e3e', link: '/tardanzas' },
+  { title: 'Faltas', desc: 'Controla las inasistencias del personal.', icon: 'bi-calendar-x', color: '#ffd43b', link: '/faltas' },
+  { title: 'Permisos', desc: 'Gestiona las solicitudes de permisos.', icon: 'bi-file-earmark-check', color: '#20c997', link: '/permisos' },
+  { title: 'Noticias', desc: 'Publica y administra los comunicados internos.', icon: 'bi-newspaper', color: '#74c0fc', link: '/noticias' },
 ]
 
 const today = new Date().toLocaleDateString('es-PE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
 
 onMounted(async () => {
+  const rol = localStorage.getItem('rol')
+  const esAdminOSupervisor = rol === 'ADMINISTRADOR' || rol === 'SUPERVISOR'
+
   try {
-    const [empleados, asistencias, tardanzas, permisos] = await Promise.allSettled([
-      api.get('/empleados/activos'),
+    const promesas = await Promise.allSettled([
+      esAdminOSupervisor
+        ? api.get('/empleados/filtrar?estado=Activo')
+        : Promise.resolve(null),
       api.get('/asistencias'),
       api.get('/tardanzas'),
       api.get('/permisos'),
     ])
 
-    if (empleados.status === 'fulfilled')
+    const [empleados, asistencias, tardanzas, permisos] = promesas
+
+    if (empleados.status === 'fulfilled' && empleados.value)
       stats.value[0].value = Array.isArray(empleados.value.data) ? empleados.value.data.length : '—'
+
     if (asistencias.status === 'fulfilled')
       stats.value[1].value = Array.isArray(asistencias.value.data) ? asistencias.value.data.length : '—'
+
     if (tardanzas.status === 'fulfilled')
       stats.value[2].value = Array.isArray(tardanzas.value.data) ? tardanzas.value.data.length : '—'
+
     if (permisos.status === 'fulfilled')
       stats.value[3].value = Array.isArray(permisos.value.data) ? permisos.value.data.length : '—'
+
   } catch (e) {
     console.warn('No se pudieron cargar algunas estadísticas', e)
   } finally {

@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { usuariosService } from '@/services/api.js'
+import { usuariosService, empleadosService } from '@/services/api.js'
 import api from '@/services/api.js'
 
 const router = useRouter()
@@ -12,12 +12,14 @@ const esEdicion = computed(() => !!id)
 const loading   = ref(false)
 const guardando = ref(false)
 const error     = ref(null)
+const empleados = ref([])
 const roles     = ref([])
 
 const form = ref({
   correo:     '',
   contraseña: '',
   idRol:      '',
+  idEmpleado: '',
 })
 
 const errores        = ref({})
@@ -26,9 +28,13 @@ const mostrarPass    = ref(false)
 onMounted(async () => {
   loading.value = true
   try {
-    // Cargar roles desde la API
     const resRoles = await api.get('/roles')
     roles.value = resRoles.data
+
+    if (!esEdicion.value) {
+      const resEmpleados = await empleadosService.listarSinUsuario()
+      empleados.value = resEmpleados.data
+    }
 
     if (esEdicion.value) {
       const res = await usuariosService.listarTodos()
@@ -38,6 +44,7 @@ onMounted(async () => {
           correo:     usuario.correo,
           contraseña: '',
           idRol:      usuario.rol?.idRol ?? '',
+          idEmpleado: '',
         }
       }
     }
@@ -54,6 +61,8 @@ function validar() {
   else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.value.correo)) e.correo = 'Ingresa un correo válido.'
   if (!esEdicion.value && !form.value.contraseña.trim()) e.contraseña = 'La contraseña es requerida.'
   if (!form.value.idRol)                                 e.idRol = 'Selecciona un rol.'
+  if (!esEdicion.value && !form.value.idEmpleado)
+    e.idEmpleado = 'Selecciona un empleado.'
   errores.value = e
   return Object.keys(e).length === 0
 }
@@ -61,18 +70,28 @@ function validar() {
 async function guardar() {
   if (!validar()) return
   guardando.value = true
-  error.value     = null
+  error.value = null
   try {
     const payload = {
       correo:     form.value.correo,
       contraseña: form.value.contraseña,
       rol: { idRol: Number(form.value.idRol) },
     }
+
     if (esEdicion.value) {
       await usuariosService.actualizar(id, payload)
     } else {
-      await usuariosService.registrar(payload)
+      // 1. Crear el usuario
+      const res = await usuariosService.registrar(payload)
+      const nuevoIdUsuario = res.data.idUsuario
+
+      // 2. Vincular el empleado con el nuevo usuario
+      const empRes = await empleadosService.obtener(form.value.idEmpleado)
+      const empleado = empRes.data
+      empleado.usuario = { idUsuario: nuevoIdUsuario }
+      await empleadosService.actualizar(form.value.idEmpleado, empleado)
     }
+
     router.push('/usuarios')
   } catch (e) {
     const msg = e.response?.data?.message
@@ -145,6 +164,21 @@ function cancelar() { router.push('/usuarios') }
               </button>
             </div>
             <span class="field-error" v-if="errores.contraseña">{{ errores.contraseña }}</span>
+          </div>
+
+          <div class="form-group full" v-if="!esEdicion">
+            <label>Empleado <span class="req">*</span></label>
+            <select v-model="form.idEmpleado" :class="{ error: errores.idEmpleado }">
+              <option value="" disabled>Selecciona un empleado</option>
+              <option
+                v-for="emp in empleados"
+                :key="emp.idEmpleado"
+                :value="emp.idEmpleado"
+              >
+                {{ emp.nombre }} {{ emp.apellido }} — {{ emp.dni }}
+              </option>
+            </select>
+            <span class="field-error" v-if="errores.idEmpleado">{{ errores.idEmpleado }}</span>
           </div>
 
           <div class="form-group full">

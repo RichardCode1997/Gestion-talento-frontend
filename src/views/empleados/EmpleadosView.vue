@@ -4,16 +4,19 @@ import { useRouter } from 'vue-router'
 import { empleadosService } from '@/services/api.js'
 
 const router  = useRouter()
+const rolUsuario = localStorage.getItem('rol')
+const correoUsuario = localStorage.getItem('correo')
 const empleados   = ref([])
 const loading     = ref(true)
 const error       = ref(null)
 const search      = ref('')
-const filtroEstado = ref('todos')
+const filtroEstado = ref('Todo')
 const showConfirm = ref(false)
 const empleadoAEliminar = ref(null)
 const toastMsg    = ref('')
 const toastType   = ref('success')
 let toastTimer    = null
+
 
 // ── Carga ──
 async function cargarEmpleados() {
@@ -33,10 +36,13 @@ async function cargarEmpleados() {
 const empleadosFiltrados = computed(() => {
   let lista = empleados.value
 
-  if (filtroEstado.value === 'activos')
-    lista = lista.filter(e => e.estado)
-  else if (filtroEstado.value === 'inactivos')
-    lista = lista.filter(e => !e.estado)
+  if (filtroEstado.value === 'Activo')
+    lista = lista.filter(e => e.estado === 'Activo')
+  else if (filtroEstado.value === 'Inactivo')
+    lista = lista.filter(e => e.estado === 'Inactivo')
+  else if (filtroEstado.value === 'Cesado')
+    lista = lista.filter(e => e.estado === 'Cesado')
+  // 'Todo' no necesita condición, devuelve toda la lista
 
   if (search.value.trim()) {
     const q = search.value.toLowerCase()
@@ -75,13 +81,14 @@ async function eliminar() {
   }
 }
 
-async function toggleEstado(empleado) {
+async function cambiarEstado(empleado, nuevoEstado) {
+  // Bloquear si intenta cambiarse a sí mismo
+  if (empleado.usuario?.correo === correoUsuario) {
+    mostrarToast('No puedes cambiar tu propio estado.', 'error')
+    return
+  }
   try {
-    if (empleado.estado) {
-      await empleadosService.desactivar(empleado.idEmpleado)
-    } else {
-      await empleadosService.activar(empleado.idEmpleado)
-    }
+    await empleadosService.cambiarEstado(empleado.idEmpleado, nuevoEstado)
     await cargarEmpleados()
     mostrarToast('Estado actualizado.', 'success')
   } catch {
@@ -133,9 +140,10 @@ onMounted(cargarEmpleados)
         />
       </div>
       <div class="filter-tabs">
-        <button :class="['filter-tab', filtroEstado === 'todos'    && 'active']" @click="filtroEstado = 'todos'">Todos</button>
-        <button :class="['filter-tab', filtroEstado === 'activos'  && 'active']" @click="filtroEstado = 'activos'">Activos</button>
-        <button :class="['filter-tab', filtroEstado === 'inactivos'&& 'active']" @click="filtroEstado = 'inactivos'">Inactivos</button>
+        <button :class="['filter-tab', filtroEstado === 'Todo'    && 'active']" @click="filtroEstado = 'Todo'">Todos</button>
+        <button :class="['filter-tab', filtroEstado === 'Activo'   && 'active']" @click="filtroEstado = 'Activo'">Activos</button>
+        <button :class="['filter-tab', filtroEstado === 'Inactivo' && 'active']" @click="filtroEstado = 'Inactivo'">Inactivos</button>
+        <button :class="['filter-tab', filtroEstado === 'Cesado'   && 'active']" @click="filtroEstado = 'Cesado'">Cesados</button>
       </div>
     </div>
 
@@ -209,16 +217,37 @@ onMounted(cargarEmpleados)
                   {{ emp.usuario?.rol?.nombreRol ?? '—' }}
                 </span>
               </td>
+
               <td>
-                <button
-                  :class="['estado-toggle', emp.estado ? 'activo' : 'inactivo']"
-                  @click="toggleEstado(emp)"
-                  :title="emp.estado ? 'Desactivar' : 'Activar'"
-                >
-                  <i :class="emp.estado ? 'bi bi-toggle-on' : 'bi bi-toggle-off'"></i>
-                  {{ emp.estado ? 'Activo' : 'Inactivo' }}
-                </button>
-              </td>
+                <!-- Admin puede cambiar estado, EXCEPTO el suyo propio -->
+                <div v-if="rolUsuario === 'ADMINISTRADOR' && emp.usuario?.correo !== correoUsuario"
+                       class="badge-wrap" style="position:relative; display:inline-block;">
+                    <button :class="['badge-estado', `estado-${emp.estado.toLowerCase()}`]"
+                            @click="emp._open = !emp._open">
+                      <span class="badge-dot"></span>
+                      {{ emp.estado }} ▾
+                    </button>
+                    <div v-if="emp._open" class="estado-dropdown">
+                      <div class="dd-item" @click="cambiarEstado(emp, 'Activo');  emp._open=false">
+                        <span class="dd-dot activo-dot"></span> Activo
+                      </div>
+                      <div class="dd-item" @click="cambiarEstado(emp, 'Inactivo'); emp._open=false">
+                        <span class="dd-dot inactivo-dot"></span> Inactivo
+                      </div>
+                      <div class="dd-item" @click="cambiarEstado(emp, 'Cesado');  emp._open=false">
+                        <span class="dd-dot cesado-dot"></span> Cesado
+                      </div>
+                    </div>
+                  </div>
+
+                <!-- Otros roles: solo ven el badge sin dropdown -->
+                <span v-else :class="['badge-estado', `estado-${emp.estado.toLowerCase()}`]"
+                        style="cursor:default;">
+                    <span class="badge-dot"></span>
+                    {{ emp.estado }}
+                  </span>
+                </td>
+
               <td>
                 <div class="actions-cell">
                   <button class="action-btn edit" @click="irAEditar(emp.idEmpleado)" title="Editar">
@@ -358,13 +387,13 @@ function getRolClass(rol) {
 /* Table */
 .table-card {
   background: #fff; border-radius: var(--radius);
-  box-shadow: var(--card-shadow); overflow: hidden;
+  box-shadow: var(--card-shadow); overflow: visible;
 }
 .table-info {
   padding: 12px 20px; font-size: 12.5px;
   color: var(--text-muted); border-bottom: 1px solid #f0f2f5;
 }
-.table-wrap { overflow-x: auto; }
+.table-wrap { overflow: visible; }
 
 .data-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
 .data-table thead tr { background: #f8f9fb; }
@@ -479,4 +508,37 @@ function getRolClass(rol) {
 .modal-enter-active, .modal-leave-active { transition: all 0.25s ease; }
 .modal-enter-from, .modal-leave-to { opacity: 0; }
 .modal-enter-from .modal-box, .modal-leave-to .modal-box { transform: scale(0.92); }
+
+.badge-estado {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 10px; border-radius: 999px;
+  font-size: 12px; font-weight: 600;
+  cursor: pointer; border: none;
+}
+.estado-activo   { background: #ebfbee; color: #2f9e44; }
+.estado-inactivo { background: #fff3e0; color: #e67700; }
+.estado-cesado   { background: #fff5f5; color: #c92a2a; }
+
+.badge-dot { width: 6px; height: 6px; border-radius: 50%; }
+.estado-activo   .badge-dot { background: #2f9e44; }
+.estado-inactivo .badge-dot { background: #e67700; }
+.estado-cesado   .badge-dot { background: #c92a2a; }
+
+.estado-dropdown {
+  position: absolute; top: calc(100% + 6px); left: 0;
+  background: #fff; border: 1px solid #e5e9f0;
+  border-radius: 10px; min-width: 130px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  z-index: 99; overflow: hidden;
+}
+.dd-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 14px; cursor: pointer; font-size: 13px;
+}
+.dd-item:hover { background: #f8f9fb; }
+.dd-dot        { width: 8px; height: 8px; border-radius: 50%; }
+.activo-dot    { background: #2f9e44; }
+.inactivo-dot  { background: #e67700; }
+.cesado-dot    { background: #c92a2a; }
+
 </style>

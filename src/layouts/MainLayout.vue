@@ -40,7 +40,7 @@
         <div class="nav-section-label">Recursos Humanos</div>
 
         <!-- Empleados -->
-        <div class="nav-group" :class="{ open: openGroup === 'empleados' }">
+        <div v-if="esAdminOSupervisor" class="nav-group" :class="{ open: openGroup === 'empleados' }">
           <div class="nav-item nav-group-toggle" @click="toggleGroup('empleados')">
             <i class="bi bi-people"></i>
             <span>Empleados</span>
@@ -50,7 +50,7 @@
             <router-link class="nav-subitem" to="/empleados" exact-active-class="active">
               <i class="bi bi-list-ul"></i> Listar Empleados
             </router-link>
-            <router-link class="nav-subitem" to="/empleados/nuevo" active-class="active">
+            <router-link v-if="esAdmin" class="nav-subitem" to="/empleados/nuevo" active-class="active">
               <i class="bi bi-person-plus"></i> Registrar Empleado
             </router-link>
           </div>
@@ -74,7 +74,8 @@
         </div>
 
         <!-- Horarios -->
-        <div class="nav-group" :class="{ open: openGroup === 'horarios' }">
+        <!-- Horarios -->
+        <div v-if="esAdmin" class="nav-group" :class="{ open: openGroup === 'horarios' }">
           <div class="nav-item nav-group-toggle" @click="toggleGroup('horarios')">
             <i class="bi bi-calendar3"></i>
             <span>Horarios</span>
@@ -156,9 +157,10 @@ const userInitial = computed(() => {
   return userName.value.charAt(0).toUpperCase()
 })
 
-const esAdmin = computed(() => {
-  return localStorage.getItem('rol') === 'ADMINISTRADOR'
-})
+const rol = computed(() => localStorage.getItem('rol'))
+const esAdmin = computed(() => rol.value === 'ADMINISTRADOR')
+const esSupervisor = computed(() => rol.value === 'SUPERVISOR')
+const esAdminOSupervisor = computed(() => esAdmin.value || esSupervisor.value)
 
 function toggleSidebar() {
   sidebarCollapsed.value = !sidebarCollapsed.value
