@@ -3,7 +3,7 @@ import router from '@/router'
 
 // ── Instancia base ──
 const api = axios.create({
-  baseURL: 'https://gestion-talento-backend-production.up.railway.app',
+  baseURL: 'https://gestion-talento-backend-production.up.railway.app/api',
   headers: { 'Content-Type': 'application/json' },
   withCredentials: true
 })
