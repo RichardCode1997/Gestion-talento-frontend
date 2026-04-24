@@ -33,7 +33,7 @@ onMounted(async () => {
 
     if (!esEdicion.value) {
       const resEmpleados = await empleadosService.listarSinUsuario()
-      empleados.value = resEmpleados.data
+      empleados.value = resEmpleados.data.filter(e => e.estado === 'Activo')
     }
 
     if (esEdicion.value) {

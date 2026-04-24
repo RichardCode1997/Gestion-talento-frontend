@@ -220,7 +220,9 @@ onMounted(cargarEmpleados)
 
               <td>
                 <!-- Admin puede cambiar estado, EXCEPTO el suyo propio -->
-                <div v-if="rolUsuario === 'ADMINISTRADOR' && emp.usuario?.correo !== correoUsuario"
+                <div v-if="rolUsuario === 'ADMINISTRADOR' &&
+                           emp.usuario?.correo !== correoUsuario &&
+                           emp.usuario?.rol?.nombreRol !== 'ADMINISTRADOR'"
                        class="badge-wrap" style="position:relative; display:inline-block;">
                     <button :class="['badge-estado', `estado-${emp.estado.toLowerCase()}`]"
                             @click="emp._open = !emp._open">
