@@ -65,6 +65,7 @@ export const empleadosService = {
   registrar:        (data)       => api.post('/empleados', data),
   actualizar:       (id, data)   => api.put(`/empleados/${id}`, data),
   cambiarEstado:    (id, estado) => api.patch(`/empleados/${id}/estado?estado=${estado}`),
+  eliminar:         (id)         => api.delete(`/empleados/${id}`),
 }
 
 // ════════════════════════════════════════
