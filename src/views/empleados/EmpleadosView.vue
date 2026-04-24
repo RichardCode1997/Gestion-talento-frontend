@@ -83,6 +83,8 @@ async function eliminar() {
 
 async function cambiarEstado(empleado, nuevoEstado) {
   // Bloquear si intenta cambiarse a sí mismo
+  console.log('rol:', empleado.usuario?.rol?.nombreRol)
+   console.log('usuario:', empleado.usuario)
   if (empleado.usuario?.correo === correoUsuario) {
     mostrarToast('No puedes cambiar tu propio estado.', 'error')
     return
