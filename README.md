@@ -61,8 +61,9 @@ npm install
 
 ### 3. Configuración
 Crea un archivo `.env.development` en la raíz del proyecto:
-
+```
 VITE_API_URL=http://localhost:8080/api
+```
 
 ### 4. Ejecutar
 ```bash
