@@ -23,6 +23,12 @@ function puedeDesactivar(usuario) {
   return true
 }
 
+function puedeEliminar(usuario) {
+  if (usuario.correo === correoActual) return false
+  if (usuario.rol?.nombreRol === 'ADMINISTRADOR') return false
+  return true
+}
+
 async function cargarUsuarios() {
   loading.value = true
   error.value   = null
@@ -200,7 +206,11 @@ onMounted(cargarUsuarios)
                   <button class="action-btn edit"   @click="irAEditar(u.idUsuario)" title="Editar">
                     <i class="bi bi-pencil"></i>
                   </button>
-                  <button class="action-btn delete" @click="confirmarEliminar(u)" title="Eliminar">
+                  <button class="action-btn delete"
+                          @click="puedeEliminar(u) && confirmarEliminar(u)"
+                          :disabled="!puedeEliminar(u)"
+                          :style="!puedeEliminar(u) ? 'opacity:0.4; cursor:not-allowed' : ''"
+                          title="Eliminar">
                     <i class="bi bi-trash"></i>
                   </button>
                 </div>
