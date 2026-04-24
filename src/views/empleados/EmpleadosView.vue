@@ -64,6 +64,12 @@ function irAEditar(id) {
   router.push(`/empleados/${id}/editar`)
 }
 
+function puedeEliminarEmpleado(emp) {
+  if (emp.usuario?.correo === correoUsuario) return false
+  if (emp.usuario?.rol?.nombreRol === 'ADMINISTRADOR') return false
+  return true
+}
+
 function confirmarEliminar(empleado) {
   empleadoAEliminar.value = empleado
   showConfirm.value = true
@@ -256,7 +262,11 @@ onMounted(cargarEmpleados)
                   <button class="action-btn edit" @click="irAEditar(emp.idEmpleado)" title="Editar">
                     <i class="bi bi-pencil"></i>
                   </button>
-                  <button class="action-btn delete" @click="confirmarEliminar(emp)" title="Eliminar">
+                  <button class="action-btn delete"
+                          @click="puedeEliminarEmpleado(emp) && confirmarEliminar(emp)"
+                          :disabled="!puedeEliminarEmpleado(emp)"
+                          :style="!puedeEliminarEmpleado(emp) ? 'opacity:0.4; cursor:not-allowed' : ''"
+                          title="Eliminar">
                     <i class="bi bi-trash"></i>
                   </button>
                 </div>
