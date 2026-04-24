@@ -1,39 +1,86 @@
 # Gestión de Talento - Frontend 🌐
 
-Interfaz de usuario moderna y dinámica desarrollada en **Vue.js 3**, diseñada para interactuar con la API de Gestión de Talento. Este dashboard permite a los administradores gestionar el control de asistencia y personal de manera intuitiva y segura.
+Dashboard moderno desarrollado en **Vue.js 3** para la gestión de Recursos Humanos. Permite administrar trabajadores, usuarios y horarios con autenticación JWT y control de acceso por roles.
 
-## 🚀 Módulos y Funcionalidades (Sincronizados con API)
+## 🌐 Demo
+
+[![Ver Demo](https://img.shields.io/badge/Ver%20Demo-Live-brightgreen?style=for-the-badge)](https://gestion-talento-frontend-swart.vercel.app)
+
+**Credenciales de prueba:**
+- Correo: `richard@gmail.com`
+- Contraseña: `123`
+
+---
+
+## 🚀 Módulos Implementados
 
 ### 🛡️ Seguridad y Control de Sesión
-* **Autenticación JWT:** Validación de credenciales mediante el intercambio de tokens firmados.
-* **Sesión Temporal:** Implementación de seguridad basada en tiempo de vida del token. Una vez expirado el tiempo de sesión configurado en el backend, el sistema protege los datos obligando a un nuevo inicio de sesión.
-* **Route Guards:** Protección de rutas a nivel de cliente mediante Vue Router, evitando el acceso a vistas administrativas sin un token válido y activo.
+* **Autenticación JWT:** Validación de credenciales con tokens firmados.
+* **Sesión Temporal:** Al expirar el token, el sistema redirige automáticamente al Login.
+* **Route Guards:** Sin token válido no hay acceso a vistas administrativas.
 
 ### 👥 Administración de Personal
-* **Dashboard de Empleados:** Visualización y gestión (CRUD) de perfiles de trabajadores en tiempo real.
-* **Configuración de Horarios:** Interfaz para la asignación y administración de jornadas laborales.
+* **Empleados:** CRUD completo con control de estado (Activo, Inactivo, Cesado).
+* **Usuarios:** Gestión de cuentas de acceso con vínculo 1:1 a empleados.
 
-### ⏱️ Monitoreo de Asistencia e Incidencias
-* **Reporte de Asistencias:** Control detallado de entradas, salidas y registro automático de **Tardanzas**.
-* **Gestor de Permisos:** Módulo para la visualización y administración de solicitudes de faltas y permisos justificados.
+### 🔒 Reglas de Seguridad en el Frontend
+* Los empleados y usuarios con rol **ADMINISTRADOR** están protegidos — no se pueden desactivar, cesar ni eliminar desde la interfaz.
+* Un administrador no puede modificar ni eliminar su propia cuenta.
+* Solo empleados **Activos** aparecen disponibles al crear un nuevo usuario.
 
-### 📢 Comunicación Corporativa
-* **Módulo de Noticias:** Panel dinámico para la publicación y lectura de comunicados internos.
+---
 
-## 🛠️ Integración Técnica
+## 🚧 En Desarrollo
 
-### Consumo de API con Axios 🔌
-Para mantener la integridad y seguridad en la comunicación con el backend, se utiliza un interceptor de peticiones que:
-1. Inyecta el **Bearer Token** en la cabecera `Authorization` de cada solicitud.
-2. Maneja de forma global la expiración del token (Error **401 Unauthorized**), redirigiendo automáticamente al usuario al Login para garantizar una sesión segura.
+Los siguientes módulos están pendientes de implementación:
 
-### 🔗 Ecosistema (Backend)
-Este proyecto consume los servicios de la API REST desarrollada en Java. Puedes revisar la lógica de negocio y seguridad del servidor aquí:
-👉 **[Repositorio Backend (Java & Spring Boot)](https://github.com/RichardCode1997/Gestion-talento-backend)**
+* **Horarios** — Gestión de jornadas laborales
+* **Asistencias** — Registro de entradas y salidas
+* **Tardanzas** — Control de ingresos fuera de hora
+* **Faltas** — Gestión de inasistencias
+* **Permisos** — Solicitudes de permisos justificados
+* **Noticias** — Comunicados corporativos
+
+---
+
+## 🛠️ Correr en local
+
+### Requisitos
+* Node.js 18+
+* Backend corriendo en `http://localhost:8080`
+
+### 1. Clonar la rama de desarrollo
+```bash
+git clone -b dev https://github.com/RichardCode1997/Gestion-talento-frontend.git
+```
+
+### 2. Instalar dependencias
+```bash
+npm install
+```
+
+### 3. Configuración
+Crea un archivo `.env.development` en la raíz del proyecto:
+
+VITE_API_URL=http://localhost:8080/api
+
+### 4. Ejecutar
+```bash
+npm run dev
+```
+
+---
 
 ## 🛠️ Stack Tecnológico
-* **Vue.js 3** (Composition API)
-* **Vue Router** (Gestión de navegación SPA)
-* **Axios** (Cliente HTTP)
-* **Bootstrap** (Diseño responsivo y componentes de UI)
-* **Vite** (Herramienta de construcción y desarrollo)
+
+| Tecnología | Uso |
+|---|---|
+| Vue.js 3 | Framework principal (Composition API) |
+| Vue Router | Navegación SPA y Route Guards |
+| Axios | Cliente HTTP con interceptores JWT |
+| Vite | Build tool |
+
+---
+
+## 🔗 Repositorio Backend
+👉 [Gestion-talento-backend](https://github.com/RichardCode1997/Gestion-talento-backend)
