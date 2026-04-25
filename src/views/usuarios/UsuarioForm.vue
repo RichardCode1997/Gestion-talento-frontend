@@ -29,7 +29,7 @@ onMounted(async () => {
   loading.value = true
   try {
     const resRoles = await api.get('/roles')
-    roles.value = resRoles.data
+    roles.value = resRoles.data.filter(r => r.nombreRol !== 'SUPERADMIN')
 
     if (!esEdicion.value) {
       const resEmpleados = await empleadosService.listarSinUsuario()

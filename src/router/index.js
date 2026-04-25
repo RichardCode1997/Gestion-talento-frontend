@@ -67,56 +67,62 @@ const router = createRouter({
           path: 'usuarios',
           name: 'usuarios',
           component: UsuariosView,
-          meta: { requiereRol: 'ADMINISTRADOR' }
+          meta: { requiereRol: ['SUPERADMIN', 'ADMINISTRADOR', 'SUPERVISOR'] }
         },
         {
           path: 'usuarios/nuevo',
           name: 'usuarios-nuevo',
           component: UsuarioForm,
-          meta: { requiereRol: 'ADMINISTRADOR' }
+          meta: { requiereRol: ['SUPERADMIN', 'ADMINISTRADOR'] }
         },
         {
           path: 'usuarios/:id/editar',
           name: 'usuarios-editar',
           component: UsuarioForm,
           props: true,
-          meta: { requiereRol: 'ADMINISTRADOR' }
+          meta: { requiereRol: ['SUPERADMIN', 'ADMINISTRADOR'] }
         },
 
         // Empleados
         {
           path: 'empleados',
           name: 'empleados',
-          component: EmpleadosView
+          component: EmpleadosView,
+          meta: { requiereRol: ['SUPERADMIN', 'ADMINISTRADOR', 'SUPERVISOR'] }
         },
         {
           path: 'empleados/nuevo',
           name: 'empleados-nuevo',
-          component: EmpleadoForm
+          component: EmpleadoForm,
+          meta: { requiereRol: ['SUPERADMIN', 'ADMINISTRADOR'] }
         },
         {
           path: 'empleados/:id/editar',
           name: 'empleados-editar',
           component: EmpleadoForm,
-          props: true
+          props: true,
+          meta: { requiereRol: ['SUPERADMIN', 'ADMINISTRADOR'] }
         },
 
         // Horarios
         {
           path: 'horarios',
           name: 'horarios',
-          component: HorariosView
+          component: HorariosView,
+          meta: { requiereRol: ['SUPERADMIN', 'ADMINISTRADOR', 'SUPERVISOR'] }
         },
         {
           path: 'horarios/nuevo',
           name: 'horarios-nuevo',
-          component: HorarioForm
+          component: HorarioForm,
+          meta: { requiereRol: ['SUPERADMIN', 'ADMINISTRADOR'] }
         },
         {
           path: 'horarios/:id/editar',
           name: 'horarios-editar',
           component: HorarioForm,
-          props: true
+          props: true,
+          meta: { requiereRol: ['SUPERADMIN', 'ADMINISTRADOR'] }
         },
 
         // Solo lectura / listados
@@ -163,7 +169,7 @@ router.beforeEach((to) => {
   if (!requiresAuth && token && to.name === 'login') return { name: 'home' }
 
   // Verificar rol requerido
-  if (to.meta.requiereRol && to.meta.requiereRol !== rol) {
+  if (to.meta.requiereRol && !to.meta.requiereRol.includes(rol)) {
     return { name: 'sin-permisos' }
   }
 })

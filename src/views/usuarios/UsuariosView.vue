@@ -18,18 +18,23 @@ const toastType        = ref('success')
 let toastTimer         = null
 
 const correoActual = localStorage.getItem('correo')
+const rolActual = localStorage.getItem('rol')
 
-function puedeDesactivar(usuario) {
-  if (usuario.correo === correoActual) return false
-  if (usuario.rol?.nombreRol === 'ADMINISTRADOR') return false
-  return true
-}
-
-function puedeEliminar(usuario) {
-  if (usuario.correo === correoActual) return false
-  if (usuario.rol?.nombreRol === 'ADMINISTRADOR') return false
-  return true
-}
+const usuariosFiltrados = computed(() => {
+  let lista = usuarios.value.filter(u => u.rol?.nombreRol !== 'SUPERADMIN')
+  if (filtroEstado.value === 'activos')
+    lista = lista.filter(u => u.estado)
+  else if (filtroEstado.value === 'inactivos')
+    lista = lista.filter(u => !u.estado)
+  if (search.value.trim()) {
+    const q = search.value.toLowerCase()
+    lista = lista.filter(u =>
+      u.correo.toLowerCase().includes(q) ||
+      u.rol?.nombreRol?.toLowerCase().includes(q)
+    )
+  }
+  return lista
+})
 
 async function cargarUsuarios() {
   loading.value = true
@@ -45,21 +50,29 @@ async function cargarUsuarios() {
   }
 }
 
-const usuariosFiltrados = computed(() => {
-  let lista = usuarios.value
-  if (filtroEstado.value === 'activos')
-    lista = lista.filter(u => u.estado)
-  else if (filtroEstado.value === 'inactivos')
-    lista = lista.filter(u => !u.estado)
-  if (search.value.trim()) {
-    const q = search.value.toLowerCase()
-    lista = lista.filter(u =>
-      u.correo.toLowerCase().includes(q) ||
-      u.rol?.nombreRol?.toLowerCase().includes(q)
-    )
-  }
-  return lista
-})
+function puedeCambiarEstado(usuario) {
+  if (usuario.correo === correoActual) return false
+  if (usuario.rol?.nombreRol === 'SUPERADMIN') return false
+  if (usuario.rol?.nombreRol === 'ADMINISTRADOR' && rolActual !== 'SUPERADMIN') return false
+  if (rolActual !== 'SUPERADMIN' && rolActual !== 'ADMINISTRADOR') return false
+  return true
+}
+
+function puedeEliminar(usuario) {
+  if (usuario.correo === correoActual) return false
+  if (usuario.rol?.nombreRol === 'SUPERADMIN') return false
+  if (usuario.rol?.nombreRol === 'ADMINISTRADOR' && rolActual !== 'SUPERADMIN') return false
+  if (rolActual !== 'SUPERADMIN' && rolActual !== 'ADMINISTRADOR') return false
+  return true
+}
+
+function puedeEditar(usuario) {
+  if (usuario.correo === correoActual) return false
+    if (usuario.rol?.nombreRol === 'SUPERADMIN') return false
+    if (usuario.rol?.nombreRol === 'ADMINISTRADOR' && rolActual !== 'SUPERADMIN') return false
+    if (rolActual !== 'SUPERADMIN' && rolActual !== 'ADMINISTRADOR') return false
+    return true
+}
 
 function paginaAnterior() {
   if (paginaActual.value > 0) {
@@ -74,6 +87,7 @@ function paginaSiguiente() {
     cargarUsuarios()
   }
 }
+
 function irANuevo()    { router.push('/usuarios/nuevo') }
 function irAEditar(id) { router.push(`/usuarios/${id}/editar`) }
 
@@ -209,9 +223,9 @@ onMounted(cargarUsuarios)
               </td>
               <td>
                 <button
-                  :class="['estado-toggle', u.estado ? 'activo' : 'inactivo', !puedeDesactivar(u) && 'disabled']"
-                  @click="puedeDesactivar(u) && toggleEstado(u)"
-                  :title="!puedeDesactivar(u) ? 'No puedes cambiar el estado de este usuario' : u.estado ? 'Desactivar' : 'Activar'"
+                  :class="['estado-toggle', u.estado ? 'activo' : 'inactivo', !puedeCambiarEstado(u) && 'disabled']"
+                  @click="puedeCambiarEstado(u) && toggleEstado(u)"
+                  :title="!puedeCambiarEstado(u) ? 'No puedes cambiar el estado de este usuario' : u.estado ? 'Desactivar' : 'Activar'"
                 >
                   <i :class="u.estado ? 'bi bi-toggle-on' : 'bi bi-toggle-off'"></i>
                   {{ u.estado ? 'Activo' : 'Inactivo' }}
@@ -219,7 +233,11 @@ onMounted(cargarUsuarios)
               </td>
               <td>
                 <div class="actions-cell">
-                  <button class="action-btn edit"   @click="irAEditar(u.idUsuario)" title="Editar">
+                  <button class="action-btn edit"
+                          @click="puedeEditar(u) && irAEditar(u.idUsuario)"
+                          :disabled="!puedeEditar(u)"
+                          :style="!puedeEditar(u) ? 'opacity:0.4; cursor:not-allowed' : ''"
+                          title="Editar">
                     <i class="bi bi-pencil"></i>
                   </button>
                   <button class="action-btn delete"

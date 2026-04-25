@@ -19,25 +19,9 @@ const toastMsg          = ref('')
 const toastType         = ref('success')
 let toastTimer          = null
 
-
-// ── Carga ──
-async function cargarEmpleados() {
-  loading.value = true
-  error.value   = null
-  try {
-    const res = await empleadosService.listarTodos(paginaActual.value)
-    empleados.value = res.data.content
-    totalPaginas.value = res.data.totalPages
-  } catch (e) {
-    error.value = 'No se pudieron cargar los empleados.'
-  } finally {
-    loading.value = false
-  }
-}
-
 // ── Filtro ──
 const empleadosFiltrados = computed(() => {
-  let lista = empleados.value
+  let lista = empleados.value.filter(e => e.usuario?.rol?.nombreRol !== 'SUPERADMIN')
 
   if (filtroEstado.value === 'Activo')
     lista = lista.filter(e => e.estado === 'Activo')
@@ -59,7 +43,46 @@ const empleadosFiltrados = computed(() => {
   return lista
 })
 
+// ── Carga ──
+async function cargarEmpleados() {
+  loading.value = true
+  error.value   = null
+  try {
+    const res = await empleadosService.listarTodos(paginaActual.value)
+    empleados.value = res.data.content
+    totalPaginas.value = res.data.totalPages
+  } catch (e) {
+    error.value = 'No se pudieron cargar los empleados.'
+  } finally {
+    loading.value = false
+  }
+}
+
 // ── Acciones ──
+
+function puedeCambiarEstado(emp) {
+  if (emp.usuario?.correo === correoUsuario) return false
+  if (emp.usuario?.rol?.nombreRol === 'SUPERADMIN') return false
+  if (emp.usuario?.rol?.nombreRol === 'ADMINISTRADOR' && rolUsuario !== 'SUPERADMIN') return false
+  if (rolUsuario !== 'SUPERADMIN' && rolUsuario !== 'ADMINISTRADOR') return false
+  return true
+}
+
+function puedeEditar(emp) {
+  if (emp.usuario?.correo === correoUsuario) return false
+  if (emp.usuario?.rol?.nombreRol === 'SUPERADMIN') return false
+  if (emp.usuario?.rol?.nombreRol === 'ADMINISTRADOR' && rolUsuario !== 'SUPERADMIN') return false
+  if (rolUsuario !== 'SUPERADMIN' && rolUsuario !== 'ADMINISTRADOR') return false
+  return true
+}
+
+function puedeEliminarEmpleado(emp) {
+  if (emp.usuario?.correo === correoUsuario) return false
+    if (emp.usuario?.rol?.nombreRol === 'SUPERADMIN') return false
+    if (emp.usuario?.rol?.nombreRol === 'ADMINISTRADOR' && rolUsuario !== 'SUPERADMIN') return false
+    if (rolUsuario !== 'SUPERADMIN' && rolUsuario !== 'ADMINISTRADOR') return false
+    return true
+}
 
 function paginaAnterior() {
   if (paginaActual.value > 0) {
@@ -80,12 +103,6 @@ function irANuevo() {
 }
 function irAEditar(id) {
   router.push(`/empleados/${id}/editar`)
-}
-
-function puedeEliminarEmpleado(emp) {
-  if (emp.usuario?.correo === correoUsuario) return false
-  if (emp.usuario?.rol?.nombreRol === 'ADMINISTRADOR') return false
-  return true
 }
 
 function confirmarEliminar(empleado) {
@@ -253,10 +270,8 @@ onMounted(cargarEmpleados)
               </td>
 
               <td>
-                <!-- Admin puede cambiar estado, EXCEPTO el suyo propio -->
-                <div v-if="rolUsuario === 'ADMINISTRADOR' &&
-                           emp.usuario?.correo !== correoUsuario &&
-                           emp.usuario?.rol?.nombreRol !== 'ADMINISTRADOR'"
+                <!-- Dropdown estado — visible según jerarquía -->
+                <div v-if="puedeCambiarEstado(emp)"
                        class="badge-wrap" style="position:relative; display:inline-block;">
                     <button :class="['badge-estado', `estado-${emp.estado.toLowerCase()}`]"
                             @click="emp._open = !emp._open">
@@ -274,19 +289,23 @@ onMounted(cargarEmpleados)
                         <span class="dd-dot cesado-dot"></span> Cesado
                       </div>
                     </div>
-                  </div>
+                </div>
 
                 <!-- Otros roles: solo ven el badge sin dropdown -->
                 <span v-else :class="['badge-estado', `estado-${emp.estado.toLowerCase()}`]"
                         style="cursor:default;">
                     <span class="badge-dot"></span>
                     {{ emp.estado }}
-                  </span>
-                </td>
+                </span>
+              </td>
 
               <td>
                 <div class="actions-cell">
-                  <button class="action-btn edit" @click="irAEditar(emp.idEmpleado)" title="Editar">
+                  <button class="action-btn edit"
+                          @click="puedeEditar(emp) && irAEditar(emp.idEmpleado)"
+                          :disabled="!puedeEditar(emp)"
+                          :style="!puedeEditar(emp) ? 'opacity:0.4; cursor:not-allowed' : ''"
+                          title="Editar">
                     <i class="bi bi-pencil"></i>
                   </button>
                   <button class="action-btn delete"

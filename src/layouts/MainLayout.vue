@@ -40,52 +40,51 @@
         <div class="nav-section-label">Recursos Humanos</div>
 
         <!-- Empleados -->
-        <div v-if="esAdminOSupervisor" class="nav-group" :class="{ open: openGroup === 'empleados' }">
+        <div v-if="esAdminNivelOSupervisor" class="nav-group" :class="{ open: openGroup === 'empleados' }">
           <div class="nav-item nav-group-toggle" @click="toggleGroup('empleados')">
             <i class="bi bi-people"></i>
             <span>Empleados</span>
             <i class="bi bi-chevron-right nav-arrow"></i>
           </div>
           <div class="nav-group-items">
-            <router-link class="nav-subitem" to="/empleados" exact-active-class="active">
+            <router-link v-if="esAdminNivelOSupervisor" class="nav-subitem" to="/empleados" exact-active-class="active">
               <i class="bi bi-list-ul"></i> Listar Empleados
             </router-link>
-            <router-link v-if="esAdmin" class="nav-subitem" to="/empleados/nuevo" active-class="active">
+            <router-link v-if="esAdminNivel" class="nav-subitem" to="/empleados/nuevo" active-class="active">
               <i class="bi bi-person-plus"></i> Registrar Empleado
             </router-link>
           </div>
         </div>
 
         <!-- Usuarios - solo ADMINISTRADOR -->
-        <div v-if="esAdmin" class="nav-group" :class="{ open: openGroup === 'usuarios' }">
+        <div v-if="esAdminNivelOSupervisor" class="nav-group" :class="{ open: openGroup === 'usuarios' }">
           <div class="nav-item nav-group-toggle" @click="toggleGroup('usuarios')">
             <i class="bi bi-shield-lock"></i>
             <span>Usuarios</span>
             <i class="bi bi-chevron-right nav-arrow"></i>
           </div>
           <div class="nav-group-items">
-            <router-link class="nav-subitem" to="/usuarios" exact-active-class="active">
+            <router-link v-if="esAdminNivelOSupervisor" class="nav-subitem" to="/usuarios" exact-active-class="active">
               <i class="bi bi-list-ul"></i> Listar Usuarios
             </router-link>
-            <router-link class="nav-subitem" to="/usuarios/nuevo" active-class="active">
+            <router-link v-if="esAdminNivel" class="nav-subitem" to="/usuarios/nuevo" active-class="active">
               <i class="bi bi-person-add"></i> Registrar Usuario
             </router-link>
           </div>
         </div>
 
         <!-- Horarios -->
-        <!-- Horarios -->
-        <div v-if="esAdmin" class="nav-group" :class="{ open: openGroup === 'horarios' }">
+        <div v-if="esAdminNivelOSupervisor" class="nav-group" :class="{ open: openGroup === 'horarios' }">
           <div class="nav-item nav-group-toggle" @click="toggleGroup('horarios')">
             <i class="bi bi-calendar3"></i>
             <span>Horarios</span>
             <i class="bi bi-chevron-right nav-arrow"></i>
           </div>
           <div class="nav-group-items">
-            <router-link class="nav-subitem" to="/horarios" exact-active-class="active">
+            <router-link v-if="esAdminNivelOSupervisor" class="nav-subitem" to="/horarios" exact-active-class="active">
               <i class="bi bi-list-ul"></i> Listar Horarios
             </router-link>
-            <router-link class="nav-subitem" to="/horarios/nuevo" active-class="active">
+            <router-link v-if="esAdminNivel" class="nav-subitem" to="/horarios/nuevo" active-class="active">
               <i class="bi bi-calendar-plus"></i> Registrar Horario
             </router-link>
           </div>
@@ -158,9 +157,11 @@ const userInitial = computed(() => {
 })
 
 const rol = computed(() => localStorage.getItem('rol'))
+const esSuperAdmin = computed(() => rol.value === 'SUPERADMIN')
 const esAdmin = computed(() => rol.value === 'ADMINISTRADOR')
 const esSupervisor = computed(() => rol.value === 'SUPERVISOR')
-const esAdminOSupervisor = computed(() => esAdmin.value || esSupervisor.value)
+const esAdminNivel = computed(() => esSuperAdmin.value || esAdmin.value)
+const esAdminNivelOSupervisor = computed(() => esAdminNivel.value || esSupervisor.value)
 
 function toggleSidebar() {
   sidebarCollapsed.value = !sidebarCollapsed.value
