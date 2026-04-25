@@ -242,7 +242,7 @@ onMounted(cargarEmpleados)
               <td class="td-id">{{ emp.idEmpleado }}</td>
               <td>
                 <div class="empleado-cell">
-                  <div class="emp-avatar">{{ emp.nombre.charAt(0) }}{{ emp.apellido.charAt(0) }}</div>
+                  <div class="emp-avatar">{{ emp.nombre?.charAt(0) ?? '?' }}{{ emp.apellido?.charAt(0) ?? '?' }}</div>
                   <div>
                     <div class="emp-name">{{ emp.nombre }} {{ emp.apellido }}</div>
                     <div class="emp-dir">{{ emp.direccion }}</div>

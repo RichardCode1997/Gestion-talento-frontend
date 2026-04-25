@@ -212,7 +212,7 @@ onMounted(cargarUsuarios)
               <td class="td-id">{{ u.idUsuario }}</td>
               <td>
                 <div class="usuario-cell">
-                  <div class="user-avatar">{{ u.correo.charAt(0).toUpperCase() }}</div>
+                  <div class="user-avatar">{{ u.correo?.charAt(0).toUpperCase() ?? '?' }}</div>
                   <span class="user-correo">{{ u.correo }}</span>
                 </div>
               </td>
