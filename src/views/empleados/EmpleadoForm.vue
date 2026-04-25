@@ -41,8 +41,8 @@ onMounted(async () => {
     departamentos.value = resDepts.data
 
     if (esEdicion.value) {
-      const res = await empleadosService.listarTodos()
-      const emp = res.data.find(e => e.idEmpleado === Number(id))
+      const res = await empleadosService.obtener(id)
+      const emp = res.data
       if (emp) {
         form.value = {
           nombre:         emp.nombre,

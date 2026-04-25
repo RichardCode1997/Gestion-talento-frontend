@@ -37,8 +37,8 @@ onMounted(async () => {
     }
 
     if (esEdicion.value) {
-      const res = await usuariosService.listarTodos()
-      const usuario = res.data.find(u => u.idUsuario === Number(id))
+      const res = await usuariosService.obtenerPorId(id)
+      const usuario = res.data
       if (usuario) {
         form.value = {
           correo:     usuario.correo,

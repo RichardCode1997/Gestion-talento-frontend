@@ -46,6 +46,7 @@ export const usuariosService = {
   listarActivos:   ()       => api.get('/usuarios/activos'),
   listarInactivos: ()       => api.get('/usuarios/inactivos'),
   buscarPorCorreo: (correo) => api.get(`/usuarios/correo/${correo}`),
+  obtenerPorId:    (id)     => api.get(`/usuarios/${id}`),
   registrar:       (data)   => api.post('/usuarios', data),
   actualizar:      (id, data) => api.put(`/usuarios/${id}`, data),
   activar:         (id) => api.patch(`/usuarios/${id}/activar`),
