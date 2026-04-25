@@ -3,19 +3,21 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { empleadosService } from '@/services/api.js'
 
-const router  = useRouter()
-const rolUsuario = localStorage.getItem('rol')
-const correoUsuario = localStorage.getItem('correo')
-const empleados   = ref([])
-const loading     = ref(true)
-const error       = ref(null)
-const search      = ref('')
-const filtroEstado = ref('Todo')
-const showConfirm = ref(false)
+const router            = useRouter()
+const rolUsuario        = localStorage.getItem('rol')
+const correoUsuario     = localStorage.getItem('correo')
+const empleados         = ref([])
+const paginaActual      = ref(0)
+const totalPaginas      = ref(0)
+const loading           = ref(true)
+const error             = ref(null)
+const search            = ref('')
+const filtroEstado      = ref('Todo')
+const showConfirm       = ref(false)
 const empleadoAEliminar = ref(null)
-const toastMsg    = ref('')
-const toastType   = ref('success')
-let toastTimer    = null
+const toastMsg          = ref('')
+const toastType         = ref('success')
+let toastTimer          = null
 
 
 // ── Carga ──
@@ -23,8 +25,9 @@ async function cargarEmpleados() {
   loading.value = true
   error.value   = null
   try {
-    const res = await empleadosService.listarTodos()
-    empleados.value = res.data
+    const res = await empleadosService.listarTodos(paginaActual.value)
+    empleados.value = res.data.content
+    totalPaginas.value = res.data.totalPages
   } catch (e) {
     error.value = 'No se pudieron cargar los empleados.'
   } finally {
@@ -57,6 +60,21 @@ const empleadosFiltrados = computed(() => {
 })
 
 // ── Acciones ──
+
+function paginaAnterior() {
+  if (paginaActual.value > 0) {
+    paginaActual.value--
+    cargarEmpleados()
+  }
+}
+
+function paginaSiguiente() {
+  if (paginaActual.value < totalPaginas.value - 1) {
+    paginaActual.value++
+    cargarEmpleados()
+  }
+}
+
 function irANuevo() {
   router.push('/empleados/nuevo')
 }
@@ -108,6 +126,15 @@ function mostrarToast(msg, type = 'success') {
   toastType.value = type
   clearTimeout(toastTimer)
   toastTimer = setTimeout(() => { toastMsg.value = '' }, 3500)
+}
+
+function getRolClass(rol) {
+  const map = {
+    'ADMINISTRADOR': 'badge-admin',
+    'SUPERVISOR':    'badge-supervisor',
+    'ASESOR':        'badge-asesor',
+  }
+  return map[rol] ?? 'badge-default'
 }
 
 onMounted(cargarEmpleados)
@@ -277,6 +304,17 @@ onMounted(cargarEmpleados)
       </div>
     </div>
 
+    <!-- Paginación Empleados -->
+    <div class="pagination" v-if="totalPaginas > 1">
+      <button class="btn-outline" @click="paginaAnterior" :disabled="paginaActual === 0">
+        <i class="bi bi-chevron-left"></i> Anterior
+      </button>
+      <span class="page-info">Página {{ paginaActual + 1 }} de {{ totalPaginas }}</span>
+      <button class="btn-outline" @click="paginaSiguiente" :disabled="paginaActual === totalPaginas - 1">
+        Siguiente <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+
     <!-- Modal confirmación eliminar -->
     <transition name="modal">
       <div v-if="showConfirm" class="modal-overlay" @click.self="showConfirm = false">
@@ -301,16 +339,6 @@ onMounted(cargarEmpleados)
   </div>
 </template>
 
-<script>
-function getRolClass(rol) {
-  const map = {
-    'ADMINISTRADOR': 'badge-admin',
-    'SUPERVISOR':    'badge-supervisor',
-    'ASESOR':        'badge-asesor',
-  }
-  return map[rol] ?? 'badge-default'
-}
-</script>
 
 <style scoped>
 .module-view { max-width: 1400px; position: relative; }
@@ -440,6 +468,10 @@ function getRolClass(rol) {
 .horario-cell { display: flex; flex-direction: column; gap: 2px; }
 .horario-name { font-weight: 500; font-size: 13px; }
 .horario-horas { font-size: 11.5px; color: var(--text-muted); }
+
+/* Pagination */
+.pagination { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 16px; }
+.page-info { font-size: 13px; color: var(--text-muted); }
 
 /* Badges */
 .badge {

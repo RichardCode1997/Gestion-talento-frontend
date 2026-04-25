@@ -42,7 +42,7 @@ export const authService = {
 //  USUARIOS
 // ════════════════════════════════════════
 export const usuariosService = {
-  listarTodos:     ()       => api.get('/usuarios'),
+  listarTodos: (page = 0, size = 20) => api.get(`/usuarios?page=${page}&size=${size}`),
   listarActivos:   ()       => api.get('/usuarios/activos'),
   listarInactivos: ()       => api.get('/usuarios/inactivos'),
   buscarPorCorreo: (correo) => api.get(`/usuarios/correo/${correo}`),
@@ -57,7 +57,7 @@ export const usuariosService = {
 //  EMPLEADOS
 // ════════════════════════════════════════
 export const empleadosService = {
-  listarTodos:      ()           => api.get('/empleados'),
+  listarTodos: (page = 0, size = 20) => api.get(`/empleados?page=${page}&size=${size}`),
   listarPorEstado:  (estado)     => api.get(`/empleados/filtrar?estado=${estado}`),
   listarSinUsuario: ()           => api.get('/empleados/sin-usuario'),
   buscarPorDni:     (dni)        => api.get(`/empleados/dni/${dni}`),

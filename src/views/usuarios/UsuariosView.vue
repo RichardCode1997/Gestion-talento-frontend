@@ -5,6 +5,8 @@ import { usuariosService } from '@/services/api.js'
 
 const router           = useRouter()
 const usuarios         = ref([])
+const paginaActual     = ref(0)
+const totalPaginas     = ref(0)
 const loading          = ref(true)
 const error            = ref(null)
 const search           = ref('')
@@ -33,8 +35,9 @@ async function cargarUsuarios() {
   loading.value = true
   error.value   = null
   try {
-    const res = await usuariosService.listarTodos()
-    usuarios.value = res.data
+    const res = await usuariosService.listarTodos(paginaActual.value)
+    usuarios.value = res.data.content
+    totalPaginas.value = res.data.totalPages
   } catch {
     error.value = 'No se pudieron cargar los usuarios.'
   } finally {
@@ -58,6 +61,19 @@ const usuariosFiltrados = computed(() => {
   return lista
 })
 
+function paginaAnterior() {
+  if (paginaActual.value > 0) {
+    paginaActual.value--
+    cargarUsuarios()
+  }
+}
+
+function paginaSiguiente() {
+  if (paginaActual.value < totalPaginas.value - 1) {
+    paginaActual.value++
+    cargarUsuarios()
+  }
+}
 function irANuevo()    { router.push('/usuarios/nuevo') }
 function irAEditar(id) { router.push(`/usuarios/${id}/editar`) }
 
@@ -221,6 +237,18 @@ onMounted(cargarUsuarios)
       </div>
     </div>
 
+    <!-- Paginación Usuarios -->
+    <div class="pagination" v-if="totalPaginas > 1">
+      <button class="btn-outline" @click="paginaAnterior" :disabled="paginaActual === 0">
+        <i class="bi bi-chevron-left"></i> Anterior
+      </button>
+      <span class="page-info">Página {{ paginaActual + 1 }} de {{ totalPaginas }}</span>
+      <button class="btn-outline" @click="paginaSiguiente" :disabled="paginaActual === totalPaginas - 1">
+        Siguiente <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+
+    <!-- Modal confirmación eliminar -->
     <transition name="modal">
       <div v-if="showConfirm" class="modal-overlay" @click.self="showConfirm = false">
         <div class="modal-box">
@@ -282,6 +310,12 @@ onMounted(cargarUsuarios)
 .usuario-cell { display: flex; align-items: center; gap: 10px; }
 .user-avatar { width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0; background: linear-gradient(135deg, #4f8cff, #cc5de8); color: #fff; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; }
 .user-correo { font-weight: 500; color: var(--text-primary); }
+
+/* Pagination */
+.pagination { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 16px; }
+.page-info { font-size: 13px; color: var(--text-muted); }
+
+/* Badges */
 .badge { display: inline-block; padding: 3px 9px; border-radius: 20px; font-size: 11.5px; font-weight: 700; white-space: nowrap; }
 .badge-admin      { background: rgba(204,93,232,0.12); color: #cc5de8; }
 .badge-supervisor { background: rgba(255,146,43,0.12);  color: #ff922b; }
