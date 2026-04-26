@@ -21,7 +21,7 @@ const correoActual = localStorage.getItem('correo')
 const rolActual = localStorage.getItem('rol')
 
 const usuariosFiltrados = computed(() => {
-  let lista = usuarios.value.filter(u => u.rol?.nombreRol !== 'SUPERADMIN')
+  let lista = usuarios.value  // SUPERADMIN ya filtrado en backend
   if (filtroEstado.value === 'activos')
     lista = lista.filter(u => u.estado)
   else if (filtroEstado.value === 'inactivos')
@@ -30,7 +30,7 @@ const usuariosFiltrados = computed(() => {
     const q = search.value.toLowerCase()
     lista = lista.filter(u =>
       u.correo.toLowerCase().includes(q) ||
-      u.rol?.nombreRol?.toLowerCase().includes(q)
+      u.nombreRol?.toLowerCase().includes(q)
     )
   }
   return lista
@@ -217,8 +217,8 @@ onMounted(cargarUsuarios)
                 </div>
               </td>
               <td>
-                <span :class="['badge', getRolClass(u.rol?.nombreRol)]">
-                  {{ u.rol?.nombreRol ?? '—' }}
+                <span :class="['badge', getRolClass(u.nombreRol)]">
+                  {{ u.nombreRol ?? '—' }}
                 </span>
               </td>
               <td>
