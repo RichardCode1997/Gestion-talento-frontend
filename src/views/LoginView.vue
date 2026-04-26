@@ -65,11 +65,15 @@ const handleLogin = async () => {
             {{ isLoading ? 'Cargando...' : 'INGRESAR' }}
           </button>
 
-          <!-- Credenciales de demo -->
           <div class="demo-hint">
             <i class="bi bi-lightbulb-fill"></i>
-            <span>Credenciales: <strong>richard@gmail.com</strong> &nbsp;/&nbsp; contraseña: <strong>123</strong></span>
+            <div>
+              <p class="demo-title">Credenciales de prueba</p>
+              <p>Email: <strong>richard@gmail.com</strong></p>
+              <p>Contraseña: <strong>123</strong></p>
+            </div>
           </div>
+
         </div>
       </div>
     </div>
@@ -171,4 +175,14 @@ const handleLogin = async () => {
   flex-shrink: 0;
 }
 .demo-hint strong { font-weight: 700; }
+
+.demo-title {
+  font-weight: 700;
+  margin-bottom: 4px;
+  font-size: 13px;
+}
+.demo-hint p {
+  margin: 0;
+  line-height: 1.6;
+}
 </style>
