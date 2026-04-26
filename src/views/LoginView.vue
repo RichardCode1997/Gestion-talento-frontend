@@ -64,6 +64,12 @@ const handleLogin = async () => {
           >
             {{ isLoading ? 'Cargando...' : 'INGRESAR' }}
           </button>
+
+          <!-- Credenciales de demo -->
+          <p class="demo-hint">
+            <i class="bi bi-info-circle"></i>
+            Demo: <strong>richard@gmail.com</strong> / <strong>123</strong>
+          </p>
         </div>
       </div>
     </div>
@@ -146,4 +152,13 @@ const handleLogin = async () => {
 .btn-login:hover { background: #2c4a63; }
 .btn-login:disabled { background: #ccc; }
 .error-text { color: red; text-align: center; font-weight: bold; font-size: 0.9em; }
+
+.demo-hint {
+  text-align: center;
+  color: #162938;
+  font-size: 12px;
+  margin-top: 14px;
+  opacity: 0.75;
+}
+.demo-hint strong { font-weight: 700; }
 </style>
