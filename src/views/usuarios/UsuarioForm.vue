@@ -71,25 +71,26 @@ async function guardar() {
   if (!validar()) return
   guardando.value = true
   error.value = null
+
   try {
-    const payload = {
-      correo:     form.value.correo,
-      contraseña: form.value.contraseña,
-      rol: { idRol: Number(form.value.idRol) },
-    }
-
     if (esEdicion.value) {
+      // Edición: solo correo, rol y contraseña (la vinculación empleado es permanente)
+      const payload = {
+        correo:     form.value.correo,
+        contraseña: form.value.contraseña,
+        rol: { idRol: Number(form.value.idRol) },
+      }
       await usuariosService.actualizar(id, payload)
-    } else {
-      // 1. Crear el usuario
-      const res = await usuariosService.registrar(payload)
-      const nuevoIdUsuario = res.data.idUsuario
 
-      // 2. Vincular el empleado con el nuevo usuario
-      const empRes = await empleadosService.obtener(form.value.idEmpleado)
-      const empleado = empRes.data
-      empleado.usuario = { idUsuario: nuevoIdUsuario }
-      await empleadosService.actualizar(form.value.idEmpleado, empleado)
+    } else {
+      // Creación: una sola llamada — el backend vincula el empleado directamente
+      const payload = {
+        correo:     form.value.correo,
+        contraseña: form.value.contraseña,
+        rol:      { idRol:      Number(form.value.idRol) },
+        empleado: { idEmpleado: Number(form.value.idEmpleado) },
+      }
+      await usuariosService.registrar(payload)
     }
 
     router.push('/usuarios')
