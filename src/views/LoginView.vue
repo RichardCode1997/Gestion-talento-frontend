@@ -66,10 +66,10 @@ const handleLogin = async () => {
           </button>
 
           <!-- Credenciales de demo -->
-          <p class="demo-hint">
-            <i class="bi bi-info-circle"></i>
-            Demo: <strong>richard@gmail.com</strong> / <strong>123</strong>
-          </p>
+          <div class="demo-hint">
+            <i class="bi bi-lightbulb-fill"></i>
+            <span>Credenciales: <strong>richard@gmail.com</strong> &nbsp;/&nbsp; contraseña: <strong>123</strong></span>
+          </div>
         </div>
       </div>
     </div>
@@ -154,11 +154,21 @@ const handleLogin = async () => {
 .error-text { color: red; text-align: center; font-weight: bold; font-size: 0.9em; }
 
 .demo-hint {
-  text-align: center;
-  color: #162938;
-  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(22, 41, 56, 0.2);
+  border-radius: 8px;
+  padding: 10px 14px;
   margin-top: 14px;
-  opacity: 0.75;
+  font-size: 12.5px;
+  color: #162938;
+}
+.demo-hint i {
+  color: #f0a500;
+  font-size: 15px;
+  flex-shrink: 0;
 }
 .demo-hint strong { font-weight: 700; }
 </style>
